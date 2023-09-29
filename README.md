@@ -1,7 +1,7 @@
 # Turn Based Battle Simulator
 A Java program that simulates battles between armies of mythical creatures. Embrace the excitement of strategy as you command your creatures to victory in turn-based combat!
 
-##**Features**
+## **Features**
 
 Dynamic Battles: Engage in thrilling turn-based battles between two armies of mythical creatures.
 
@@ -13,7 +13,7 @@ Battle Details: Witness detailed battle sequences with creature stats, damage ca
 
 Winner Determination: Discover the winning army based on the total health points of remaining creatures.
 
-##**How to Use**
+## **How to Use**
 
 Run the Java program.
 Choose the "Battle" option from the menu.
