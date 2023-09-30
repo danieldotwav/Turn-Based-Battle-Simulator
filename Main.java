@@ -38,8 +38,9 @@ class Creature {
     String getNameWithType() { return getName() + " the " + getType(); }
     int getStrength() { return strength; }
     int getHealth() { return health; }
-    void setName(int n_name) { setCreature(n_name, type, strength, health); }
-    void setType(Creature n_type) { setCreature(name, n_type, strength, health); }
+
+    void setName(String n_name) { setCreature(n_name, type, strength, health); }
+    void setType(CreatureType n_type) { setCreature(name, n_type, strength, health); }
     void setStrength(int n_strength) { setCreature(name, type, n_strength, health); }
     void setHealth(int n_health) { setCreature(name, type, strength, n_health); }
     
@@ -48,8 +49,8 @@ class Creature {
 }
 
 class Army {
-    Creature[] creatures;
-    int army_size;
+    private Creature[] creatures;
+    private int army_size;
 
     Army(int size) {
         setArmySize(size);
@@ -67,7 +68,10 @@ class Army {
         }
     }
 
-    void SetArmy(Creature[] new_creatures, int new_army_size) {
+    Creature getArmyCreatureAtPosition(int position) { return creatures[position]; }
+    int getArmySize() { return army_size; }
+
+    void setArmy(Creature[] new_creatures, int new_army_size) {
         creatures = new_creatures;
         army_size = new_army_size;
     }
@@ -86,9 +90,30 @@ class Army {
         for (int i = 0; i < army_size; i++) {
             army_stats.append("Name: ").append(creatures[i].getName()).append("\nType: ").append(creatures[i].getType()).append("\nHP: ").append(creatures[i].getHealth()).append("\nSTR: ").append(creatures[i].getStrength()).append("\n\n");
         }
+        army_stats.append("Army Size: ").append(army_size).append("\n");
         army_stats.append("Total Army HP: ").append(calculateArmyHealth()).append("\n");
         return army_stats.toString();
     }
+    /* NOTE: Alternative Dialog Boxes with formatted output
+    String getArmyStats() {
+        StringBuilder army_stats = new StringBuilder();
+        army_stats.append(String.format("%-40s %-20s %-20s %-20s%n", "Name", "Type", "HP", "STR"));
+
+        for (int i = 0; i < army_size; i++) {
+            String formattedString = String.format("%-40s %-10s %-10d %-10d%n",
+            creatures[i].getName(),
+            creatures[i].getType(),
+            creatures[i].getHealth(),
+            creatures[i].getStrength());
+            army_stats.append(formattedString);
+        }
+
+        army_stats.append("Army Size: ").append(army_size).append("\n");
+        army_stats.append("Total Army HP: ").append(calculateArmyHealth()).append("\n");
+        return army_stats.toString();
+    }
+    */
+
     int calculateArmyHealth() {
         int HP = 0;
         for (int i = 0; i < army_size; i++) {
@@ -159,12 +184,12 @@ public class Main {
             winner = null;
 
             if (random.nextBoolean()) {
-                attacker = army_one.creatures[i];
-                defender = army_two.creatures[i];
+                attacker = army_one.getArmyCreatureAtPosition(i);
+                defender = army_two.getArmyCreatureAtPosition(i);
             } 
             else {
-                attacker = army_two.creatures[i];
-                defender = army_one.creatures[i];
+                attacker = army_two.getArmyCreatureAtPosition(i);
+                defender = army_one.getArmyCreatureAtPosition(i);
             }
 
             // Battle Sequence
@@ -212,7 +237,6 @@ public class Main {
         else {
             WinningArmy.append("Neither Army");
         }
-        
         JOptionPane.showMessageDialog(null, WinningArmy.append(" wins the battle!\n\n").append("Army 1 Final HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Final HP: ").append(army_two.calculateArmyHealth()));
     }
 
