@@ -13,10 +13,10 @@ final class Constants {
 }
 
 class Creature {
-    String name;
-    CreatureType type;
-    int strength;
-    int health;
+    private String name;
+    private CreatureType type;
+    private int strength;
+    private int health;
 
     Creature() {
         setCreature("D'FAULTO, Bane of Yor'Existense", CreatureType.DEMON, 999, 999);
@@ -35,9 +35,14 @@ class Creature {
 
     String getName() { return name; }
     String getType() { return type.name().toLowerCase(); }
-    String getNameWithType() { return name + " the " + type.name().toLowerCase(); }
+    String getNameWithType() { return getName() + " the " + getType(); }
     int getStrength() { return strength; }
     int getHealth() { return health; }
+    void setName(int n_name) { setCreature(n_name, type, strength, health); }
+    void setType(Creature n_type) { setCreature(name, n_type, strength, health); }
+    void setStrength(int n_strength) { setCreature(name, type, n_strength, health); }
+    void setHealth(int n_health) { setCreature(name, type, strength, n_health); }
+    
     String to_String() { return getNameWithType() + ", STR: " + strength + ", HP: " + health; }
     int getDamage() { return new Random().nextInt(strength + 1); }
 }
@@ -66,8 +71,8 @@ class Army {
         creatures = new_creatures;
         army_size = new_army_size;
     }
-    void setArmySize(int new_army_size) { 
-        army_size = new_army_size; 
+    void setArmySize(int n_army_size) { 
+        army_size = n_army_size; 
     }
     static CreatureType getRandomCreatureType() {
         int random = new Random().nextInt(CreatureType.values().length);
@@ -86,7 +91,7 @@ class Army {
     }
     int calculateArmyHealth() {
         int HP = 0;
-        for(int i = 0; i < army_size; i++) {
+        for (int i = 0; i < army_size; i++) {
             HP += creatures[i].getHealth();
         }
         return HP;
@@ -97,7 +102,7 @@ public class Main {
     public static void main(String[] args) {
         String menu_options = "Menu\n1. Battle\n2. Quit\nEnter Selection: ";
         MENU menu;
-        JOptionPane.showMessageDialog(null, "---Welcome to the Turn Based Battle Simulator---\n");
+        JOptionPane.showMessageDialog(null, "--- Welcome to the Turn Based Battle Simulator ---\n");
 
         do {
             menu = getMenuSelection(menu_options);
@@ -112,9 +117,8 @@ public class Main {
                     JOptionPane.showMessageDialog(null, "\nInvalid Menu Option!");
                     break;
             }
-        } while(menu != MENU.QUIT);
+        } while (menu != MENU.QUIT);
     }
-
     static MENU getMenuSelection(String menu_options) {
         int input;
         MENU menu = MENU.ERROR;
@@ -136,21 +140,15 @@ public class Main {
         JOptionPane.showMessageDialog(null, "\nBattle!\n");
 
         // Determine Army Size
-        int army_size;
-        do {
-            army_size = Integer.parseInt(JOptionPane.showInputDialog("Enter the size of the armies: "));
-            if (army_size < 1 || army_size > Constants.ARMY_SIZE_MAX) {
-                JOptionPane.showMessageDialog(null, "Army size must be between 1 and 10 creatures!");
-            }
-        } while (army_size < 1 || army_size > Constants.ARMY_SIZE_MAX);
+        int army_size = getValidArmySize();
 
         // Create two armies
         Army army_one = new Army(army_size);
         Army army_two = new Army(army_size);
 
         // Display Army Stats
-        JOptionPane.showMessageDialog(null, "--Army 1--\n\n" + army_one.getArmyStats());
-        JOptionPane.showMessageDialog(null, "--Army 2--\n\n" + army_two.getArmyStats());
+        JOptionPane.showMessageDialog(null, "-- Army 1 --\n\n" + army_one.getArmyStats());
+        JOptionPane.showMessageDialog(null, "-- Army 2 --\n\n" + army_two.getArmyStats());
 
         for(int i = 0; i < army_size; i++) {
             // Randomly select which creature attacks first
@@ -169,13 +167,9 @@ public class Main {
                 defender = army_one.creatures[i];
             }
 
-            // Store the total damage dealt by each army and the total army HP
-            int totalDamageArmyOne = 0;
-            int totalDamageArmyTwo = 0;
-
             // Battle Sequence
-            JOptionPane.showMessageDialog(null, "Round " + (i + 1) + "!\n" + attacker.getNameWithType() + " vs " + defender.getNameWithType() + "\n");
-            JOptionPane.showMessageDialog(null, defender.getNameWithType() + " is caught off guard!\n" + attacker.getNameWithType() + " attacks first!\n");
+            turn_details.append("Round ").append(i + 1).append("!\n").append(attacker.getNameWithType()).append(" vs ").append(defender.getNameWithType()).append("\n\n");
+            turn_details.append(defender.getNameWithType()).append(" is caught off guard!\n").append(attacker.getNameWithType()).append(" attacks first!\n\n");
             while (winner == null) {
                 int damage = attacker.getDamage();
                 int currentHP = defender.getHealth();
@@ -185,18 +179,10 @@ public class Main {
 
                 // Update defender's HP
                 currentHP -= effectiveDamage;
-                defender.health = currentHP;
-
-                if (attacker == army_one.creatures[i]) {
-                    totalDamageArmyTwo += effectiveDamage;
-                }
-                else {
-                    totalDamageArmyOne += effectiveDamage;
-                }
-                
+                defender.setHealth(currentHP);
                 turn_details.append(attacker.getNameWithType()).append(" attacks ").append(defender.getNameWithType()).append(" for ").append(damage).append(" damage!\n");
                 
-                if (defender.health <= 0) {
+                if (defender.getHealth() <= 0) {
                     turn_details.append(defender.getNameWithType()).append(" has 0 HP remaining!!!\n");
                     winner = attacker;
                 }
@@ -212,8 +198,8 @@ public class Main {
             }
 
             // Display the winning creature
-            JOptionPane.showMessageDialog(null, battle_details + winner.getNameWithType() + " wins this round!");
-            JOptionPane.showMessageDialog(null, "Army 1 Remaining HP: " + army_one.calculateArmyHealth() + "\nArmy 2 Remaining HP: " + army_two.calculateArmyHealth());
+            battle_details.append(winner.getNameWithType()).append(" wins this round!\n\n").append("Army 1 Remaining HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Remaining HP: ").append(army_two.calculateArmyHealth());
+            JOptionPane.showMessageDialog(null, battle_details);
         }
         // Determine the winning Army
         StringBuilder WinningArmy = new StringBuilder(0);
@@ -226,8 +212,8 @@ public class Main {
         else {
             WinningArmy.append("Neither Army");
         }
+        
         JOptionPane.showMessageDialog(null, WinningArmy.append(" wins the battle!\n\n").append("Army 1 Final HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Final HP: ").append(army_two.calculateArmyHealth()));
-        JOptionPane.showMessageDialog(null, "Battle Over!");
     }
 
     static String getRandomName() {
@@ -240,6 +226,26 @@ public class Main {
         Random random = new Random();
         int randomNum = random.nextInt(names.length);
         return names[randomNum];
+    }
+
+    static int getValidArmySize() {
+        int size = 0;
+        boolean valid_input = false;
+        do {
+            try {
+                size = Integer.parseInt(JOptionPane.showInputDialog("Enter the size of the armies: "));
+                if (size < 1 || size > Constants.ARMY_SIZE_MAX) {
+                    JOptionPane.showMessageDialog(null, "Error: Army size must be between 1 and " + Constants.ARMY_SIZE_MAX + " creatures");
+                }
+                else {
+                    valid_input = true;
+                }
+            }
+            catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Error: Please enter a valid number between 1 and " + Constants.ARMY_SIZE_MAX + " for army size");
+            }
+        } while (!valid_input);
+        return size;
     }
 }
 
