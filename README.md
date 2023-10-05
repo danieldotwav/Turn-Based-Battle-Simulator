@@ -28,4 +28,3 @@ Adjust the minimum and maximum values for creature strength and health in the Co
 
 Customize the menu, battle details, and user prompts to suit your preferences.
 
-Unleash your strategic prowess and embark on legendary battles in this Turn-Based Battle Simulator. Whether you're a developer looking to explore Java or a fan of fantasy warfare, this project offers an engaging and entertaining experience. Feel free to contribute, report issues, or adapt the code for your own gaming projects.
