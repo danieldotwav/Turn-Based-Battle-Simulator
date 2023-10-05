@@ -396,10 +396,10 @@ public class Main {
         printCenteredTitle("Welcome to the Turn Based Battle Simulator", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
         
         do {
+            used_names.clear(); // Clear the used names at the start of each game
             menu = getMenuSelection(menu_options);
             switch (menu) {
                 case BATTLE:
-                    //TurnBasedCombat();
                     game.TurnBasedCombat();
                     break;
                 case QUIT:
