@@ -1,8 +1,6 @@
 import java.util.Random;
-import javax.swing.JOptionPane;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Collections;
 
 enum MENU { DUMMY, BATTLE, QUIT, ERROR }
 enum CreatureType { DEMON, BALROG, ELF, CYBERDEMON }
@@ -10,7 +8,6 @@ enum CreatureType { DEMON, BALROG, ELF, CYBERDEMON }
 final class Constants {
     public static final char PADDING_CHAR_TITLE = '~';   // Padding character for the title
     public static final char PADDING_CHAR_MENU = '-';    // Padding character for the menu
-    public static final char PADDING_CHAR_BATTLE = '=';  // Padding character for the battle
     public static final int TOTAL_WIDTH = 85;       // Total width of the console window
     public static final int DEFAULT_ARMY_SIZE = 1;  // Default army size
     public static final int NUM_CREATURE_TYPES = 4; // Number of creature types
@@ -25,6 +22,136 @@ final class Constants {
     public static final int DEMON_CRIT_BONUS = 50;  // Demon crit bonus damage
     public static final int ELF_CRIT_PERCENT = 10;  // Elf crit chance
     public static final int ELF_DAMAGE_MULTIPLIER = 2; // Elf crit damage multiplier
+}
+
+class Game {
+
+    public Game() {}
+
+    public void TurnBasedCombat() {
+        Main.printCenteredTitle("BUILD YOUR ARMY", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
+        int army_size = getValidArmySize();
+
+        // Create two armies
+        Army army_one = new Army(army_size);
+        Army army_two = new Army(army_size);
+
+        // Display Army Stats
+        Main.printCenteredTitle("ARMY 1", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+        System.out.println(army_one.getArmyStats());
+        Main.printCenteredTitle("ARMY 2", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+        System.out.println(army_two.getArmyStats());
+        Main.printCenteredTitle("BATTLE START", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
+
+        for(int i = 0; i < army_size; i++) {
+            // Randomly select which creature attacks first
+            Random random = new Random();
+            Creature attacker, defender, winner;
+            StringBuilder turn_details = new StringBuilder();
+            StringBuilder battle_details = new StringBuilder();
+            winner = null;
+
+            if (random.nextBoolean()) {
+                attacker = army_one.getArmyCreatureAtPosition(i);
+                defender = army_two.getArmyCreatureAtPosition(i);
+            } 
+            else {
+                attacker = army_two.getArmyCreatureAtPosition(i);
+                defender = army_one.getArmyCreatureAtPosition(i);
+            }
+
+            // Battle Sequence
+            String battle_title = "Round " + (i + 1);
+            Main.printCenteredTitle(battle_title, Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+            turn_details.append("\n").append(attacker.getNameWithType()).append(" vs ").append(defender.getNameWithType()).append("\n\n");
+            turn_details.append(defender.getNameWithType()).append(" is caught off guard!\n").append(attacker.getNameWithType()).append(" attacks first!\n\n");
+
+            while (winner == null) {
+                int damage = attacker.getDamage();
+                int currentHP = defender.getHealth();
+
+                // Calculate the effective damage(minimum of damage and currentHP)
+                int effectiveDamage = Math.min(damage, currentHP);
+
+                // Update defender's HP
+                currentHP -= effectiveDamage;
+                defender.setHealth(currentHP);
+                turn_details.append(attacker.getNameWithType()).append(" attacks ").append(defender.getNameWithType()).append(" for ").append(damage).append(" damage!\n");
+                
+                if (defender.getHealth() <= 0) {
+                    turn_details.append(defender.getNameWithType()).append(" has 0 HP remaining!!!\n");
+                    winner = attacker;
+                }
+                else {
+                    turn_details.append(defender.getNameWithType()).append(" has ").append(defender.getHealth()).append(" HP remaining!\n");
+                    Creature temp = attacker;
+                    attacker = defender;
+                    defender = temp;
+                }
+
+                battle_details.append(turn_details).append("\n"); // Store the entire battle sequence
+                turn_details.setLength(0); // Clear the turn details
+            }
+
+            // Display the winning creature
+            battle_details.append(winner.getNameWithType()).append(" wins this round!\n\n").append("Army 1 Remaining HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Remaining HP: ").append(army_two.calculateArmyHealth());
+            System.out.println(battle_details);
+        }
+        // Determine the winning Army
+        StringBuilder WinningArmy = new StringBuilder(0);
+        if (army_one.calculateArmyHealth() > army_two.calculateArmyHealth()) {
+            WinningArmy.append("\nArmy 1");
+        }
+        else if (army_one.calculateArmyHealth() < army_two.calculateArmyHealth()) {
+            WinningArmy.append("\nArmy 2");
+        }
+        else {
+            WinningArmy.append("\nNeither Army");
+        }
+        Main.printCenteredTitle("Results", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+        System.out.println(WinningArmy.append(" wins the battle!\n\n").append("Army 1 Final HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Final HP: ").append(army_two.calculateArmyHealth()));
+        Main.printCenteredTitle("BATTLE END", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
+    }
+
+    private int getValidArmySize() {
+        int size = 0;
+        boolean valid_input = false;
+        do {
+            try {
+                size = Integer.parseInt(System.console().readLine("\nEnter the size of the armies: "));
+                if (size < 1 || size > Constants.ARMY_SIZE_MAX) {
+                    System.out.println("\nError: Army size must be between 1 and " + Constants.ARMY_SIZE_MAX + " creatures");
+                }
+                else {
+                    valid_input = true;
+                }
+            }
+            catch (NumberFormatException ex) {
+                System.out.println("\nError: Please enter a valid number between 1 and " + Constants.ARMY_SIZE_MAX + " for army size");
+            }
+        } while (!valid_input);
+        return size;
+    }
+
+    static String getRandomName() {
+        String[] names = { "Vaelgrim Deathstalker", "Morgaroth", "Ravengrim", "Draegon Blackthorn", 
+                      "Vaelkara Doomweaver", "Malachar", "Sylvaris Grimshadow", "Zirelia Ashenheart", 
+                      "Thexandra Bloodwraith", "Valerius Blackveil", "Azura Nightshade", "Thalgrim", 
+                      "Zarael Darkthorn", "Moros Grimscythe", "Ravenna Soulstealer", "Draven Nightshade",
+                      "Vaelorath", "Elara Shadowblade", "Astraea Stormcaller", "Aeliana Earthshaker" };
+        
+        String random_name;
+        Random random = new Random();
+
+        do {
+            random_name = names[random.nextInt(names.length)];
+        } while(Main.used_names.contains(random_name));
+
+        Main.used_names.add(random_name);
+
+        return random_name;
+    }
+
 }
 
 class Creature {
@@ -167,7 +294,7 @@ class Army {
 
     void createNewCreatures(int num_creatures) {
         for (int i = 0; i < num_creatures; i++) {
-            String name = Main.getRandomName();
+            String name = Game.getRandomName();
             int randomStrength = getRandomValue(Constants.MIN_STRENGTH, Constants.MAX_STRENGTH);
             int randomHealth = getRandomValue(Constants.MIN_HP, Constants.MAX_HP);
 
@@ -259,10 +386,10 @@ class Army {
 
 public class Main {
     // TODO: How should I keep track of which names have already been selected from the array of names?
-    private static final Set<String> used_names = new HashSet<>(); // the final is the reference to the set, not the set itself
+    static final Set<String> used_names = new HashSet<>(); // the final is the reference to the set, not the set itself
     //private static final boolean[] used_names = new boolean[20]; // In Java, bools are initialized to false by default
-    
     public static void main(String[] args) {
+        Game game = new Game();
         String menu_options = "\nMain Menu\n1. Battle\n2. Quit";
         MENU menu;
 
@@ -272,7 +399,8 @@ public class Main {
             menu = getMenuSelection(menu_options);
             switch (menu) {
                 case BATTLE:
-                    TurnBasedCombat();
+                    //TurnBasedCombat();
+                    game.TurnBasedCombat();
                     break;
                 case QUIT:
                     System.out.println("\nFarwell Warrior!\n");
@@ -301,92 +429,45 @@ public class Main {
         }
         return menu;
     }
-
-    static void TurnBasedCombat() {
-        printCenteredTitle("BUILD YOUR ARMY", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
-        int army_size = getValidArmySize();
-
-        // Create two armies
-        Army army_one = new Army(army_size);
-        Army army_two = new Army(army_size);
-
-        // Display Army Stats
-        printCenteredTitle("ARMY 1", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
-        System.out.println(army_one.getArmyStats());
-        printCenteredTitle("ARMY 2", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
-        System.out.println(army_two.getArmyStats());
-        printCenteredTitle("BATTLE START", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
-
-        for(int i = 0; i < army_size; i++) {
-            // Randomly select which creature attacks first
-            Random random = new Random();
-            Creature attacker, defender, winner;
-            StringBuilder turn_details = new StringBuilder();
-            StringBuilder battle_details = new StringBuilder();
-            winner = null;
-
-            if (random.nextBoolean()) {
-                attacker = army_one.getArmyCreatureAtPosition(i);
-                defender = army_two.getArmyCreatureAtPosition(i);
-            } 
-            else {
-                attacker = army_two.getArmyCreatureAtPosition(i);
-                defender = army_one.getArmyCreatureAtPosition(i);
-            }
-
-            // Battle Sequence
-            String battle_title = "Round " + (i + 1);
-            printCenteredTitle(battle_title, Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
-            turn_details.append("\n").append(attacker.getNameWithType()).append(" vs ").append(defender.getNameWithType()).append("\n\n");
-            turn_details.append(defender.getNameWithType()).append(" is caught off guard!\n").append(attacker.getNameWithType()).append(" attacks first!\n\n");
-
-            while (winner == null) {
-                int damage = attacker.getDamage();
-                int currentHP = defender.getHealth();
-
-                // Calculate the effective damage(minimum of damage and currentHP)
-                int effectiveDamage = Math.min(damage, currentHP);
-
-                // Update defender's HP
-                currentHP -= effectiveDamage;
-                defender.setHealth(currentHP);
-                turn_details.append(attacker.getNameWithType()).append(" attacks ").append(defender.getNameWithType()).append(" for ").append(damage).append(" damage!\n");
-                
-                if (defender.getHealth() <= 0) {
-                    turn_details.append(defender.getNameWithType()).append(" has 0 HP remaining!!!\n");
-                    winner = attacker;
-                }
-                else {
-                    turn_details.append(defender.getNameWithType()).append(" has ").append(defender.getHealth()).append(" HP remaining!\n");
-                    Creature temp = attacker;
-                    attacker = defender;
-                    defender = temp;
-                }
-
-                battle_details.append(turn_details).append("\n"); // Store the entire battle sequence
-                turn_details.setLength(0); // Clear the turn details
-            }
-
-            // Display the winning creature
-            battle_details.append(winner.getNameWithType()).append(" wins this round!\n\n").append("Army 1 Remaining HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Remaining HP: ").append(army_two.calculateArmyHealth());
-            System.out.println(battle_details);
+    
+    public static void printCenteredTitle(String title, int total_width, char padding_char) {
+        int title_length = title.length();
+        
+        // If the title length is greater than the total width, truncate it to the total width if possible, otherwise set it to a space
+        if (title_length > total_width) {
+            title = title.substring(0, total_width);
+            title_length = title.length(); // update title length after truncation
         }
-        // Determine the winning Army
-        StringBuilder WinningArmy = new StringBuilder(0);
-        if (army_one.calculateArmyHealth() > army_two.calculateArmyHealth()) {
-            WinningArmy.append("\nArmy 1");
+        
+        // Determine Padding
+        int num_padding_chars = (total_width - title_length) / 2;
+        String padding = String.valueOf(padding_char).repeat(num_padding_chars);
+
+        // Ensure symmetry by checking for odd total width and even title length
+        boolean needs_extra_padding = (total_width % 2 != 0) && (title_length % 2 == 0);
+
+        // StringBuilder for efficient string concatenation
+        StringBuilder output = new StringBuilder("\n");
+
+        // Append padding and title to output
+        output.append(padding);
+        if(needs_extra_padding) {
+            output.append(padding_char);
         }
-        else if (army_one.calculateArmyHealth() < army_two.calculateArmyHealth()) {
-            WinningArmy.append("\nArmy 2");
+
+        // Check for non-empty title
+        if (title_length > 0) {
+            output.append(" ").append(title).append(" ");
+            output.append(padding);
         }
         else {
-            WinningArmy.append("\nNeither Army");
+            output.append(padding_char).append(padding_char).append(padding);
         }
-        printCenteredTitle("Results", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
-        System.out.println(WinningArmy.append(" wins the battle!\n\n").append("Army 1 Final HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Final HP: ").append(army_two.calculateArmyHealth()));
-        printCenteredTitle("BATTLE END", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
+
+        System.out.println(output.toString());
     }
 
+    /*
     static String getRandomName() {
         String[] names = { "Vaelgrim Deathstalker", "Morgaroth", "Ravengrim", "Draegon Blackthorn", 
                       "Vaelkara Doomweaver", "Malachar", "Sylvaris Grimshadow", "Zirelia Ashenheart", 
@@ -405,7 +486,8 @@ public class Main {
 
         return random_name;
     }
-
+    */
+    /*
     static int getValidArmySize() {
         int size = 0;
         boolean valid_input = false;
@@ -425,8 +507,10 @@ public class Main {
         } while (!valid_input);
         return size;
     }
-
+    */
+    
     // Takes a title, total width, and padding character (must be string), and prints it centered on the screen. Works for even or odd title lengths
+    /* 
     public static void printCenteredTitle(String title, int total_width, char padding_char) {
         int title_length = title.length();
         
@@ -463,6 +547,7 @@ public class Main {
 
         System.out.println(output.toString());
     }
+    */
 }
 
 /*
