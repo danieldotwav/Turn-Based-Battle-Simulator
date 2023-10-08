@@ -8,7 +8,8 @@ enum CreatureType { DEMON, BALROG, ELF, CYBERDEMON }
 final class Constants {
     public static final char PADDING_CHAR_TITLE = '~';   // Padding character for the title
     public static final char PADDING_CHAR_MENU = '-';    // Padding character for the menu
-    public static final int TOTAL_WIDTH = 85;       // Total width of the console window
+    public static final char PADDING_CHAR_BATTLE = '.';  // Padding character for the battle
+    public static final int TOTAL_WIDTH = 65;       // Total width of the console window
     public static final int DEFAULT_ARMY_SIZE = 1;  // Default army size
     public static final int NUM_CREATURE_TYPES = 4; // Number of creature types
     public static final int MIN_STRENGTH = 40;      // Minimum strength of a creature
@@ -22,12 +23,14 @@ final class Constants {
     public static final int DEMON_CRIT_BONUS = 50;  // Demon crit bonus damage
     public static final int ELF_CRIT_PERCENT = 10;  // Elf crit chance
     public static final int ELF_DAMAGE_MULTIPLIER = 2; // Elf crit damage multiplier
+    public static final int TWO = 2;                   // For modulus and division
+    public static final int HEALTH_BAR_WIDTH = 25;     // Width of the health bar
 }
 
 class Game {
 
     public Game() {}
-
+    
     public void TurnBasedCombat() {
         Main.printCenteredTitle("BUILD YOUR ARMY", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
         int army_size = getValidArmySize();
@@ -63,8 +66,18 @@ class Game {
             // Battle Sequence
             String battle_title = "Round " + (i + 1);
             Main.printCenteredTitle(battle_title, Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
-            turn_details.append("\n").append(attacker.getNameWithType()).append(" vs ").append(defender.getNameWithType()).append("\n\n");
+            //turn_details.append("\n").append(attacker.getNameWithType()).append(" vs ").append(defender.getNameWithType()).append("\n\n");
             turn_details.append(defender.getNameWithType()).append(" is caught off guard!\n").append(attacker.getNameWithType()).append(" attacks first!\n\n");
+
+            // Display initial HP of fighters at the beginning of each round
+            //battle_details.append("\n").append(String.valueOf(Constants.PADDING_CHAR_BATTLE).repeat(Constants.TOTAL_WIDTH)).append("\n");
+            //battle_details.append(attacker.getName()).append("'s HP: ").append(attacker.getHealth()).append(" ").append(String.format("%10s", attacker.getHealthBar())).append("\n");
+            //battle_details.append(defender.getName()).append("'s HP: ").append(defender.getHealth()).append("\n");
+            //battle_details.append(String.valueOf(Constants.PADDING_CHAR_BATTLE).repeat(Constants.TOTAL_WIDTH)).append("\n");
+
+            // Format strings for displaying HP
+            String nameFormatString = "%-37s %s %n";
+            String healthBarFormatString = "%-37s %s %n";
 
             while (winner == null) {
                 int damage = attacker.getDamage();
@@ -88,10 +101,21 @@ class Game {
                     attacker = defender;
                     defender = temp;
                 }
+                // Display HP of fighters after each turn
+                //battle_details.append(attacker.getName()).append("'s HP\n").append(attacker.getHealthBar()).append("\n");
+                //battle_details.append(defender.getName()).append("'s HP\n").append(defender.getHealthBar()).append("\n");
+                battle_details.append(String.format(nameFormatString, attacker.getName() + "'s HP", defender.getName() + "'s HP"));
+                battle_details.append(String.format(healthBarFormatString, attacker.getHealthBar(), defender.getHealthBar()));
 
                 battle_details.append(turn_details).append("\n"); // Store the entire battle sequence
                 turn_details.setLength(0); // Clear the turn details
             }
+
+            // Display final HP of fighters after each round
+            //battle_details.append("\n").append(String.valueOf(Constants.PADDING_CHAR_BATTLE).repeat(Constants.TOTAL_WIDTH)).append("\n");
+            //battle_details.append(attacker.getName()).append("'s HP\n").append(attacker.getHealthBar()).append("\n");
+            //battle_details.append(defender.getName()).append("'s HP\n").append(defender.getHealthBar()).append("\n");
+            //battle_details.append(String.valueOf(Constants.PADDING_CHAR_BATTLE).repeat(Constants.TOTAL_WIDTH)).append("\n"); 
 
             // Display the winning creature
             battle_details.append(winner.getNameWithType()).append(" wins this round!\n\n").append("Army 1 Remaining HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Remaining HP: ").append(army_two.calculateArmyHealth());
@@ -151,13 +175,13 @@ class Game {
 
         return random_name;
     }
-
 }
 
 class Creature {
     protected String name;
     protected int strength;
     protected int health;
+    protected int max_HP;
 
     public Creature() {
         setCreature("D'FAULTO, Bane of Yor'Existense", Constants.DEFAULT_STRENGTH, Constants.DEFAULT_HP);
@@ -170,6 +194,7 @@ class Creature {
         name = n_name;
         strength = n_strength;
         health = n_health;
+        max_HP = n_health;
     }
 
     String getName() { return name; }
@@ -177,6 +202,7 @@ class Creature {
     String getNameWithType() { return getName() + " the " + getType(); }
     int getStrength() { return strength; }
     int getHealth() { return health; }
+    int getMaxHP() { return max_HP; }
 
     void setName(String n_name) { setCreature(n_name, strength, health); }
     void setStrength(int n_strength) { setCreature(name, n_strength, health); }
@@ -184,6 +210,21 @@ class Creature {
     
     String to_String() { return getNameWithType() + ", STR: " + strength + ", HP: " + health; }
     int getDamage() { return new Random().nextInt(strength + 1); }
+    String getHealthBar() {
+        int healthPercentage = (int) ((double) getHealth() / getMaxHP() * 100); // calculating health percentage
+        int barLength = (int) (((double) getHealth() / getMaxHP()) * Constants.HEALTH_BAR_WIDTH); // calculating number of "|" characters
+
+        StringBuilder bar = new StringBuilder("[");
+        for(int i = 0; i < barLength; i++) {
+            bar.append("|");
+        }
+        for(int i = barLength; i < Constants.HEALTH_BAR_WIDTH; i++) {
+            bar.append(" ");
+        }
+        bar.append("]");
+
+        return healthPercentage + "% " + bar.toString();
+    }
 }
 
 // For classes that don't have their own damage, call the parent getdamage
@@ -359,10 +400,10 @@ class Army {
 
     String getArmyStats() {
         StringBuilder army_stats = new StringBuilder();
-        army_stats.append(String.format("%-30s %-20s %-20s %-20s%n", "Name", "Type", "HP", "STR"));
+        army_stats.append(String.format("%-30s %-12s %10s %10s%n", "Name", "Type", "HP", "STR"));
 
         for (int i = 0; i < army_size; i++) {
-            String formattedString = String.format("%-30s %-20s %-20d %-20d%n",
+            String formattedString = String.format("%-30s %-12s %10d %10d%n",
             creatures[i].getName(),
             creatures[i].getType(),
             creatures[i].getHealth(),
@@ -385,9 +426,7 @@ class Army {
 }
 
 public class Main {
-    // TODO: How should I keep track of which names have already been selected from the array of names?
     static final Set<String> used_names = new HashSet<>(); // the final is the reference to the set, not the set itself
-    //private static final boolean[] used_names = new boolean[20]; // In Java, bools are initialized to false by default
     public static void main(String[] args) {
         Game game = new Game();
         String menu_options = "\nMain Menu\n1. Battle\n2. Quit";
@@ -440,18 +479,18 @@ public class Main {
         }
         
         // Determine Padding
-        int num_padding_chars = (total_width - title_length) / 2;
+        int num_padding_chars = (total_width - title_length) / Constants.TWO;
         String padding = String.valueOf(padding_char).repeat(num_padding_chars);
 
         // Ensure symmetry by checking for odd total width and even title length
-        boolean needs_extra_padding = (total_width % 2 != 0) && (title_length % 2 == 0);
+        boolean needs_extra_padding = (total_width % Constants.TWO != 0) && (title_length % Constants.TWO == 0);
 
         // StringBuilder for efficient string concatenation
         StringBuilder output = new StringBuilder("\n");
 
         // Append padding and title to output
         output.append(padding);
-        if(needs_extra_padding) {
+        if (needs_extra_padding) {
             output.append(padding_char);
         }
 
@@ -480,7 +519,7 @@ public class Main {
 
         do {
             random_name = names[random.nextInt(names.length)];
-        } while(used_names.contains(random_name));
+        } while (used_names.contains(random_name));
 
         used_names.add(random_name);
 
