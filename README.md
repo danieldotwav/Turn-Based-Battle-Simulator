@@ -1,6 +1,10 @@
 # Turn Based Battle Simulator
 A Java program that simulates battles between armies of mythical creatures. Embrace the excitement of strategy as you command your creatures to victory in turn-based combat!
 
+![Screenshot 2023-12-27 235030](https://github.com/danieldotwav/Turn-Based-Battle-Simulator/assets/31682816/5c02581b-7117-4704-af46-7bed14eca233)
+
+![Screenshot 2023-12-27 235147](https://github.com/danieldotwav/Turn-Based-Battle-Simulator/assets/31682816/d451ba35-0d1e-4c4b-99c7-66ad9385b853)
+
 ## **Features**
 
 Dynamic Battles: Engage in thrilling turn-based battles between two armies of mythical creatures.
