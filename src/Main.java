@@ -1,10 +1,13 @@
 package src;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.IOException;
 
 enum MENU { DUMMY, BATTLE, QUIT, ERROR }
 enum CreatureType { DEMON, BALROG, ELF, CYBERDEMON }
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Game game = new Game();
         String menu_options = "\nMain Menu\n1. Battle\n2. Quit";
         MENU menu;
@@ -12,7 +15,8 @@ public class Main {
         printCenteredTitle("Welcome to the Turn Based Battle Simulator", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
         
         do {
-            Game.used_names.clear(); // Clear the used names at the start of each game
+            clearUsedNames(); // Clear the used names file at the start of each game
+
             menu = getMenuSelection(menu_options);
             switch (menu) {
                 case BATTLE:
@@ -81,6 +85,19 @@ public class Main {
         }
 
         System.out.println(output.toString());
+    }
+
+    public static void clearUsedNames() throws IOException {
+        String filePath = "C:/Users/daniel/Documents/Visual Studio Code/SelectionRepetition/src/UsedNames.txt";
+        
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(filePath));
+            writer.close();
+            System.out.println("File Contents Have Been Cleared Successfully");
+        } 
+        catch (IOException e) {
+            System.err.println("Error while clearing the UsedNames.txt file: ");
+        }
     }
 }
 

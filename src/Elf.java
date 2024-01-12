@@ -15,7 +15,7 @@ class Elf extends Creature {
         int base_damage = super.getDamage();
         int random_num = new Random().nextInt(100);
 
-        if(random_num < ELF_CRIT_PERCENT) {
+        if (random_num < ELF_CRIT_PERCENT) {
             base_damage *= ELF_DAMAGE_MULTIPLIER;
         }
         return base_damage;

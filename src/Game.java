@@ -1,13 +1,9 @@
 package src;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
-public class Game implements Constants{
-    static final Set<String> used_names = new HashSet<>(); // the final is the reference to the set, not the set itself
-    
+public class Game implements Constants {
     public void TurnBasedCombat() {
-        Main.printCenteredTitle("BUILD YOUR ARMY", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_TITLE);
+        Main.printCenteredTitle("BUILD YOUR ARMY", TOTAL_WIDTH, PADDING_CHAR_TITLE);
         int army_size = getValidArmySize();
 
         // Create two armies
@@ -15,17 +11,17 @@ public class Game implements Constants{
         Army army_two = new Army(army_size);
 
         // Display Army Stats
-        Main.printCenteredTitle("ARMY 1", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+        Main.printCenteredTitle("ARMY 1", TOTAL_WIDTH, PADDING_CHAR_MENU);
         System.out.println(army_one.getArmyStats());
-        Main.printCenteredTitle("ARMY 2", Constants.TOTAL_WIDTH, Constants.PADDING_CHAR_MENU);
+        Main.printCenteredTitle("ARMY 2", TOTAL_WIDTH, PADDING_CHAR_MENU);
         System.out.println(army_two.getArmyStats());
-        Main.printCenteredTitle("BATTLE START", Constants.BATTLE_WIDTH, Constants.PADDING_CHAR_TITLE);
+        Main.printCenteredTitle("BATTLE START", BATTLE_WIDTH, PADDING_CHAR_TITLE);
 
         // Format strings for displaying HP
         String nameFormatString = "%-52s %s %n";
         String healthBarFormatString = "%-52s %s %n";
 
-        for(int i = 0; i < army_size; i++) {
+        for (int i = 0; i < army_size; i++) {
             // Randomly select which creature attacks first
             Random random = new Random();
             Creature attacker, defender, winner;
@@ -44,7 +40,7 @@ public class Game implements Constants{
 
             // Battle Sequence
             String battle_title = "Round " + (i + 1);
-            Main.printCenteredTitle(battle_title, Constants.BATTLE_WIDTH, Constants.PADDING_CHAR_MENU);
+            Main.printCenteredTitle(battle_title, BATTLE_WIDTH, PADDING_CHAR_MENU);
             System.out.print(String.format(nameFormatString, attacker.getName() + "'s HP (" + attacker.getHealth() + ")", defender.getName() + "'s HP (" + defender.getHealth() + ")"));
             System.out.println(String.format(healthBarFormatString, getHealthBar(attacker), getHealthBar(defender)));
             System.out.println(" >> " + defender.getNameWithType() + " is caught off guard!\n >> " + attacker.getNameWithType() + " attacks first!"); 
@@ -62,7 +58,7 @@ public class Game implements Constants{
                 System.out.print(" >> " + attacker.getNameWithType() + " attacks " + defender.getNameWithType() + " for " + damage + " damage!\n\n");
 
                 // Display HP of fighters after each turn
-                if(turn % 2 != 0) {
+                if (turn % 2 != 0) {
                     System.out.print(String.format(nameFormatString, attacker.getName() + "'s HP (" + attacker.getHealth() + ")", defender.getName() + "'s HP (" + defender.getHealth() + ")"));
                     System.out.println(String.format(healthBarFormatString, getHealthBar(attacker), getHealthBar(defender)));
                 }
@@ -99,14 +95,21 @@ public class Game implements Constants{
         else {
             WinningArmy.append("\nNeither Army");
         }
-        Main.printCenteredTitle("Results", Constants.BATTLE_WIDTH, Constants.PADDING_CHAR_MENU);
-        System.out.println(WinningArmy.append(" wins the battle!\n\n").append("Army 1 Final HP: ").append(army_one.calculateArmyHealth()).append("\nArmy 2 Final HP: ").append(army_two.calculateArmyHealth()));
-        Main.printCenteredTitle("BATTLE END", Constants.BATTLE_WIDTH, Constants.PADDING_CHAR_TITLE);
+
+        Main.printCenteredTitle("Results", BATTLE_WIDTH, PADDING_CHAR_MENU);
+        System.out.println(WinningArmy + " is Victorious!\nFinal Army Stats:");
+        Main.printCenteredTitle("ARMY 1", TOTAL_WIDTH, PADDING_CHAR_MENU);
+        System.out.println(army_one.getArmyStats());
+        Main.printCenteredTitle("ARMY 2", TOTAL_WIDTH, PADDING_CHAR_MENU);
+        System.out.println(army_two.getArmyStats());
+        
+        Main.printCenteredTitle("BATTLE END", BATTLE_WIDTH, PADDING_CHAR_TITLE);
+        
     }
 
     public String getHealthBar(Creature creature) {
         int healthPercentage = (int) ((double) (creature.getHealth() * 100) / creature.getMaxHP()); // calculating health percentage
-        int barLength = (int) (( (double) (creature.getHealth() * Constants.HEALTH_BAR_WIDTH) / creature.getMaxHP()) ); // calculating number of "|" characters
+        int barLength = (int) (( (double) (creature.getHealth() * HEALTH_BAR_WIDTH) / creature.getMaxHP()) ); // calculating number of "|" characters
 
         //TESTING
         /*
@@ -126,7 +129,7 @@ public class Game implements Constants{
         for(int i = 0; i < barLength; i++) {
             bar.append("|");
         }
-        for(int i = barLength; i < Constants.HEALTH_BAR_WIDTH; i++) {
+        for(int i = barLength; i < HEALTH_BAR_WIDTH; i++) {
             bar.append(" ");
         }
         bar.append("]");
@@ -140,20 +143,21 @@ public class Game implements Constants{
         do {
             try {
                 size = Integer.parseInt(System.console().readLine("\nEnter the size of the armies: "));
-                if (size < 1 || size > Constants.ARMY_SIZE_MAX) {
-                    System.out.println("\nError: Army size must be between 1 and " + Constants.ARMY_SIZE_MAX + " creatures");
+                if (size < 1 || size > ARMY_SIZE_MAX) {
+                    System.out.println("\nError: Army size must be between 1 and " + ARMY_SIZE_MAX + " creatures");
                 }
                 else {
                     valid_input = true;
                 }
             }
             catch (NumberFormatException ex) {
-                System.out.println("\nError: Please enter a valid number between 1 and " + Constants.ARMY_SIZE_MAX + " for army size");
+                System.out.println("\nError: Please enter a valid number between 1 and " + ARMY_SIZE_MAX + " for army size");
             }
         } while (!valid_input);
         return size;
     }
 
+    /*
     static String getRandomName() {
         String[] names = { "Vaelgrim", "Morgaroth", "Ravengrim", "Draegon", 
                       "Vaelkara", "Malachar", "Sylvaris", "Zirelia", 
@@ -172,4 +176,9 @@ public class Game implements Constants{
 
         return random_name;
     }
+    */
+
+    
+
+
 }

@@ -1,15 +1,22 @@
 package src;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-// NOTE: ask if it's okay for the Army class to implement Constants
 
-public class Army implements Constants{
+public class Army implements Constants {
     private Creature[] creatures;
     private int army_size;
+    private static final Random random = new Random();
 
     public Army() {
         setArmySize(DEFAULT_ARMY_SIZE);
         creatures = new Creature[army_size];
-        creatures[0] = new Demon(); // creature a default demon creature
+        creatures[0] = new Demon(); // create a default demon creature
     }
 
     public Army(int size) {
@@ -20,7 +27,7 @@ public class Army implements Constants{
 
     void createNewCreatures(int num_creatures) {
         for (int i = 0; i < num_creatures; i++) {
-            String name = Game.getRandomName();
+            String name = getRandomName();
             int randomStrength = getRandomValue(MIN_STRENGTH, MAX_STRENGTH);
             int randomHealth = getRandomValue(MIN_HP, MAX_HP);
 
@@ -30,9 +37,9 @@ public class Army implements Constants{
 
     Creature getRandomCreature(String name, int strength, int health) {
         Creature random_creature;
-        int random = new Random().nextInt(CreatureType.values().length);
+        int creatureTypeIndex = random.nextInt(CreatureType.values().length);
 
-        switch(CreatureType.values()[random]) {
+        switch(CreatureType.values()[creatureTypeIndex]) {
             case DEMON:
                 random_creature = new Demon(name, strength, health);
                 break;
@@ -67,7 +74,7 @@ public class Army implements Constants{
     }
 
     void setArmy(Creature[] new_creatures, int new_army_size) {
-        if(new_creatures.length >= new_army_size) {
+        if (new_creatures.length >= new_army_size) {
             creatures = new_creatures;
             army_size = new_army_size;
         }
@@ -80,7 +87,7 @@ public class Army implements Constants{
     }
     
     static int getRandomValue(int min, int max) { 
-        return new Random().nextInt(max - min + 1) + min; 
+        return random.nextInt(max - min + 1) + min; 
     }
 
     String getArmyStats() {
@@ -107,5 +114,78 @@ public class Army implements Constants{
             HP += creatures[i].getHealth();
         }
         return HP;
+    }
+
+    public String getRandomName() {
+        String[] names;
+        try {
+            names = readNamesFromFile("C:/Users/daniel/Documents/Visual Studio Code/SelectionRepetition/src/AvailableNames.txt");
+        } catch (IOException e) {
+            System.err.println("Error reading names from file: " + e.getMessage());
+            return null; // Or handle this in another suitable way
+        }
+
+        String random_name;
+        boolean nameUsed;
+
+        do {
+            random_name = names[random.nextInt(names.length)];
+            //boolean nameUsed;
+            try {
+                nameUsed = isNameUsed(random_name);
+            } catch (IOException e) {
+                System.err.println("Error checking if name is used: " + e.getMessage());
+                return null; // Or handle this in another suitable way
+            }
+        } while (nameUsed);
+
+        try {
+            markNameAsUsed(random_name);
+        } catch (IOException e) {
+            System.err.println("Error marking name as used: " + e.getMessage());
+        }
+
+        return random_name;
+    }
+
+    private String[] readNamesFromFile(String fileName) throws IOException {
+        List<String> nameList = new ArrayList<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                nameList.add(line.trim());
+            }
+        } catch (IOException e) {
+            System.err.println("Error while reading from " + fileName + ": " + e.getMessage());
+            throw e; // Re-throwing the exception to handle it at a higher level
+        }
+
+        return nameList.toArray(new String[0]);
+    }
+
+    private boolean isNameUsed(String name) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader("C:/Users/daniel/Documents/Visual Studio Code/SelectionRepetition/src/UsedNames.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.trim().equals(name)) {
+                    return true;
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error while checking if name is used: " + e.getMessage());
+            throw e; // Re-throwing the exception to handle it at a higher level
+        }
+        return false;
+    }
+
+    private void markNameAsUsed(String name) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter("C:/Users/daniel/Documents/Visual Studio Code/SelectionRepetition/src/UsedNames.txt", true))) {
+            bw.write(name);
+            bw.newLine();
+        } catch (IOException e) {
+            System.err.println("Error while marking name as used: " + e.getMessage());
+            throw e; // Re-throwing the exception to handle it at a higher level
+        }
     }
 }

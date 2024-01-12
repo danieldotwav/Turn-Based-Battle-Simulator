@@ -3,7 +3,7 @@ package src;
 public interface Constants {
     char PADDING_CHAR_TITLE = '~';   // Padding character for the title
     char PADDING_CHAR_MENU = '-';    // Padding character for the menu
-    char PADDING_CHAR_BATTLE = '+';  // Padding character for the battle
+    char PADDING_CHAR_WINNER = '*';  // Padding character for the battle
     int TOTAL_WIDTH = 65;       // Total width of the console window
     int BATTLE_WIDTH = 85;      // Total width of the battle console window
     int DEFAULT_ARMY_SIZE = 1;  // Default army size

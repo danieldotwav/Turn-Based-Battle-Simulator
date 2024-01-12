@@ -1,7 +1,7 @@
 package src;
 import java.util.Random;
 
-public abstract class Creature implements Constants{
+public abstract class Creature implements Constants {
     protected String name;
     protected int strength;
     protected int health;
