@@ -11,11 +11,13 @@ Dynamic Battles: Engage in thrilling turn-based battles between two armies of my
 
 Randomized Creatures: Create armies with a variety of creatures, each with unique names, types, strengths, and health.
 
-Interactive Interface: Enjoy user-friendly interaction through dialog boxes and menus.
-
 Battle Details: Witness detailed battle sequences with creature stats, damage calculations, and round outcomes.
 
 Winner Determination: Discover the winning army based on the total health points of remaining creatures.
+
+## ** Information** 
+
+The current implementation serves as a proof-of-concept game engine, wherein the user selects the army sizes and then their armies are randomly generated and fight against one another. However, with the current tools available in the project, it is possible to design the battle system flexibly, allowing for more of an RPG-style experience.
 
 ## **How to Use**
 
